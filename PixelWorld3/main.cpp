@@ -23,10 +23,11 @@ const char* vertexShaderSource = "#version 330 core\n"
     "layout (location = 1) in vec3 aColor;\n"
     "uniform mat4 proj;\n"
     "uniform mat4 view;\n"
+    "uniform mat4 model;\n"
     "out vec3 color;\n"
     "void main()\n"
     "{\n"
-    "   gl_Position = proj * view * vec4(aPos, 1.0f);\n"
+    "   gl_Position = proj * view * model * vec4(aPos, 1.0f);\n"
     "   color = aColor;\n"
     "}\0";
 const char* fragmentShaderSource = "#version 330 core\n"
@@ -74,12 +75,17 @@ int main() {
     unsigned int shader = linkShaders(2, shaders);
     glUseProgram(shader);
 
+    int winWidth = winSize.x;
+    int winHeight = winSize.y;
+
     //I'm used to the top left being the origin, with x+ facing right and y+ facing down
-    const glm::mat4 projection = glm::ortho(0.0, 100.0, 100.0, 0.0, 0.1, 100.0);
-    const glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0.0, 0.0, -1.0));
+    const glm::mat4 projection = glm::ortho(0.0, 62.0, 62.0, 0.0, 0.1, 100.0);
+    const glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(1.0, 1.0, -1.0));
+    const glm::mat4 model(1.0);
 
     glUniformMatrix4fv(glGetUniformLocation(shader,"proj"),1,GL_FALSE,&(projection[0][0]));
     glUniformMatrix4fv(glGetUniformLocation(shader,"view"),1,GL_FALSE,&(view[0][0]));
+    glUniformMatrix4fv(glGetUniformLocation(shader,"model"),1,GL_FALSE,&(model[0][0]));
 
     //create tiles
     const unsigned int tileSize = glm::min(winSize.x / viewSize.x, winSize.y / viewSize.y);
@@ -94,12 +100,14 @@ int main() {
     std::vector<float> vertices = genVertices(worldSize);
     std::vector<int> indices = genIndices(worldSize);
 
-    for (int i = 0; i < 600; i+=6) {
-        //std::cout << vertices[i] << vertices[i+1] << vertices[i+2] << " " << vertices[i + 3] << vertices[i + 4] << vertices[i + 5] << std::endl;
+    std::cout << vertices.size() << " " << indices.size() << " " << indices.back() << std::endl;
+
+    for (int i = 0; i < 6000; i+=6) {
+        //std::cout << vertices[i] << vertices[i+1] << vertices[i+2] << " " << vertices[i + 3] << vertices[i + 4] << vertices[i + 5] << "\n" << std::endl;
     }
 
     for (int i = 0; i < 24; i++) {
-        std::cout << indices[i] << std::endl;
+        //std::cout << indices[i] << std::endl;
     }
 
     /*float vertices[] = {
@@ -124,10 +132,10 @@ int main() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -147,9 +155,11 @@ int main() {
         glClearColor(0.0f, 0.6f, 0.6f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glfwGetWindowSize(window, &winWidth, &winHeight);
+
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size()/4);
+        //my math for genIndices is busted rn
+        //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -279,6 +289,25 @@ std::vector<float> genVertices(const glm::uvec2 gridSize) {
             verts.push_back(0.0f);
             verts.push_back(0.0f);
 
+            //tr and bl again while i fix the element array
+            //tr
+            verts.push_back(1.0f + i);
+            verts.push_back(0.0f + j);
+            verts.push_back(0.0f);
+
+            verts.push_back(0.0f);
+            verts.push_back(1.0f);
+            verts.push_back(0.0f);
+
+            //bl
+            verts.push_back(0.0f + i);
+            verts.push_back(1.0f + j);
+            verts.push_back(0.0f);
+
+            verts.push_back(0.0f);
+            verts.push_back(0.0f);
+            verts.push_back(0.0f);
+
             //br
             verts.push_back(1.0f + i);
             verts.push_back(1.0f + j);
@@ -311,9 +340,9 @@ std::vector<int> genIndices(const glm::uvec2 gridSize) {
             inds.push_back(bl);
             inds.push_back(tr);
 
-            inds.push_back(br);
             inds.push_back(tr);
             inds.push_back(bl);
+            inds.push_back(br);
         }
     }
 
