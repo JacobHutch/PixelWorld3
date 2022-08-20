@@ -41,7 +41,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 int main() {
     //app args
     const glm::uvec2 winSize = {800,600};
-    const glm::uvec2 worldSize = {60,60};
+    const glm::uvec2 worldSize = {17,10};
     const glm::uvec2 viewSizeArg = {41,41};
     const char* title = "Pixel World 3";
 
@@ -79,16 +79,15 @@ int main() {
     int winHeight = winSize.y;
 
     //I'm used to the top left being the origin, with x+ facing right and y+ facing down
-    const glm::mat4 projection = glm::ortho(0.0, 62.0, 62.0, 0.0, 0.1, 100.0);
-    const glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(1.0, 1.0, -1.0));
+    glm::mat4 projection = glm::ortho(0.0, (double)(worldSize.x+2), (double)(worldSize.y+2), 0.0, 0.1, 100.0);
+    glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(1.0, 1.0, -1.0));
     const glm::mat4 model(1.0);
 
-    glUniformMatrix4fv(glGetUniformLocation(shader,"proj"),1,GL_FALSE,&(projection[0][0]));
-    glUniformMatrix4fv(glGetUniformLocation(shader,"view"),1,GL_FALSE,&(view[0][0]));
     glUniformMatrix4fv(glGetUniformLocation(shader,"model"),1,GL_FALSE,&(model[0][0]));
 
     //create tiles
-    const unsigned int tileSize = glm::min(winSize.x / viewSize.x, winSize.y / viewSize.y);
+    double tileSize = glm::min(winWidth / viewSize.x, winHeight / viewSize.y);
+    double tileX, tileY, tileSizeX, tileSizeY;
 
     const unsigned int viewXHalf = viewSize.x / 2;
     const unsigned int viewYHalf = viewSize.y / 2;
@@ -106,7 +105,7 @@ int main() {
     }
 
     for (int i = indices.size()-1; i > 21000; i--) {
-        std::cout << indices[i] << std::endl;
+        //std::cout << indices[i] << std::endl;
     }
 
     /*float vertices[] = {
@@ -157,6 +156,21 @@ int main() {
 
         glfwGetWindowSize(window, &winWidth, &winHeight);
 
+        tileSizeX = ((double)winWidth) / (viewSize.x + 2);
+        tileSizeY = ((double)winHeight) / (viewSize.y + 2);
+        tileSize = glm::min(tileSizeX, tileSizeY);
+        if (tileSizeX < tileSizeY) {
+            tileX = (double)viewSize.x + 2;
+            tileY = ((double)viewSize.x + 2) * ((double)winHeight / winWidth);
+        } else {
+            tileX = ((double)viewSize.y + 2) * ((double)winWidth / winHeight);
+            tileY = (double)viewSize.y + 2;
+        }
+
+        view = glm::translate(glm::mat4(1.0), glm::vec3((tileX - viewSize.x) / 2.0, (tileY - viewSize.y) / 2.0, -1.0));
+        projection = glm::ortho(0.0, tileX, tileY, 0.0, 0.1, 100.0);
+        glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, &(view[0][0]));
+        glUniformMatrix4fv(glGetUniformLocation(shader, "proj"), 1, GL_FALSE, &(projection[0][0]));
         //glDrawArrays(GL_TRIANGLES, 0, vertices.size()/4);
         //my math for genIndices is busted rn
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
