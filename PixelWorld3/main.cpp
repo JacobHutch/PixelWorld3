@@ -96,7 +96,6 @@ int main() {
     const unsigned int winPadX = (winSize.x - (tileSize * viewSize.x)) / 2;
     const unsigned int winPadY = (winSize.y - (tileSize * viewSize.y)) / 2;
 
-
     std::vector<float> vertices = genVertices(worldSize);
     std::vector<int> indices = genIndices(worldSize);
 
@@ -106,8 +105,8 @@ int main() {
         //std::cout << vertices[i] << vertices[i+1] << vertices[i+2] << " " << vertices[i + 3] << vertices[i + 4] << vertices[i + 5] << "\n" << std::endl;
     }
 
-    for (int i = 0; i < 24; i++) {
-        //std::cout << indices[i] << std::endl;
+    for (int i = indices.size()-1; i > 21000; i--) {
+        std::cout << indices[i] << std::endl;
     }
 
     /*float vertices[] = {
@@ -135,6 +134,7 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //indices = std::vector<int>{0,1,2,1,2,3,4,5,6,5,6,7};
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -157,9 +157,9 @@ int main() {
 
         glfwGetWindowSize(window, &winWidth, &winHeight);
 
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size()/4);
+        //glDrawArrays(GL_TRIANGLES, 0, vertices.size()/4);
         //my math for genIndices is busted rn
-        //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -291,7 +291,7 @@ std::vector<float> genVertices(const glm::uvec2 gridSize) {
 
             //tr and bl again while i fix the element array
             //tr
-            verts.push_back(1.0f + i);
+            /*verts.push_back(1.0f + i);
             verts.push_back(0.0f + j);
             verts.push_back(0.0f);
 
@@ -306,7 +306,7 @@ std::vector<float> genVertices(const glm::uvec2 gridSize) {
 
             verts.push_back(0.0f);
             verts.push_back(0.0f);
-            verts.push_back(0.0f);
+            verts.push_back(0.0f);*/
 
             //br
             verts.push_back(1.0f + i);
@@ -327,14 +327,15 @@ std::vector<int> genIndices(const glm::uvec2 gridSize) {
     //as with genVertices, corner order is tl,tr,bl,br
     //triangles will be drawn as top left and bottom right (tl,bl,tr, tr,bl,br)
     std::vector<int> inds;
-    int tl, tr, bl, br;
+    int base, tl, tr, bl, br;
     for (int i = 0; i < gridSize.x; i++) {
         for (int j = 0; j < gridSize.y; j++) {
 
-            tl = (i * 2) + ((j * 2) * gridSize.x);
-            tr = ((i * 2) + 1) + ((j * 2) * gridSize.x);
-            bl = (i * 2) + (((j * 2) + 1) * gridSize.x);
-            br = ((i * 2) + 1) + (((j * 2) + 1) * gridSize.x);
+            base = (i + (j * gridSize.x)) * 4;
+            tl = base;
+            tr = base + 1;
+            bl = base + 2;
+            br = base + 3;
 
             inds.push_back(tl);
             inds.push_back(bl);
@@ -345,6 +346,5 @@ std::vector<int> genIndices(const glm::uvec2 gridSize) {
             inds.push_back(br);
         }
     }
-
     return inds;
 }
