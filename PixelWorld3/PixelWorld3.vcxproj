@@ -142,9 +142,19 @@
     <ClCompile Include="..\..\..\..\Documents\Visual Studio 2022\Libraries\glad\src\glad.c" />
     <ClCompile Include="DebugMsg.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="Util.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugMsg.h" />
+    <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="World.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SquareShaderFragment.glsl" />
+    <None Include="SquareShaderVertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
