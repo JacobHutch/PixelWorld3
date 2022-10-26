@@ -11,7 +11,12 @@ typedef struct _node {
     int entropy;
     glm::vec2 pos;
     bool queued;
+    struct _node* left;
+    struct _node* right;
+    struct _node* up;
+    struct _node* down;
 } node;
+
 
 
 

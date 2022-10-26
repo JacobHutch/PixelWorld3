@@ -21,12 +21,11 @@ class World {
 
 	void pushColor(glm::vec3 color, unsigned int x, unsigned int y);
 	void wfcGen();
-	glm::vec3 colorNode(std::vector<int> domain);
-	void colorWorld();
+	glm::vec3 colorNode(node* n);
 	void step();
 	void collapseWF();
-	void collapseNode(node* n, int x, int y);
-	void pruneNeighbor(node* t, int val);
+	void collapseNode(node* n);
+	void pruneNeighbor(node* t, node* n);
 	bool finished();
 
 	private:

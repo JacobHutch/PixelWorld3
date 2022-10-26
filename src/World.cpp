@@ -12,10 +12,22 @@ World::World(unsigned int x, unsigned int y) : mWorldX(x), mWorldY(y) {
     std::srand(time(nullptr));
     mFinished = false;
 	mColorData = std::vector<glm::vec3>(x * y, glm::vec3(1.0f));
-    mDomains = {0,1,2,3};
+    mDomains = {0,1,2,3,4,5,6,7,8,9,10,11};
     mBaseEntropy = mDomains.size();
-    mCols = {glm::vec3(0.0f,0.25f,0.75f),glm::vec3(0.0f,0.75f,0.0f),
-            glm::vec3(1.0f,0.75f,0.0f),glm::vec3(0.75f,0.0f,0.0f)};
+    //rainbow scheme
+    mCols = {glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f,0.5f,0.0f),
+            glm::vec3(1.0f,1.0f,0.0f),glm::vec3(0.5f,1.0f,0.0f),
+            glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f,1.0f,0.5f),
+            glm::vec3(0.0f,1.0f,1.0f),glm::vec3(0.0f,0.5f,1.0f),
+            glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.5f,0.0f,1.0f),
+            glm::vec3(1.0f,0.0f,1.0f),glm::vec3(1.0f,0.0f,0.5f)};
+    //weather radar scheme
+    /*mCols = {glm::vec3(1.0f,1.0f,1.0f),glm::vec3(0.5f,0.0f,1.0f),
+            glm::vec3(1.0f,0.0f,1.0f),glm::vec3(0.5f,0.0f,0.0f),
+            glm::vec3(1.0f,0.0f,0.0f),glm::vec3(1.0f,0.5f,0.0f),
+            glm::vec3(1.0f,1.0f,0.0f),glm::vec3(0.0f,0.5f,0.0f),
+            glm::vec3(0.0f,1.0f,0.0f),glm::vec3(0.0f,0.0f,1.0f),
+            glm::vec3(0.0f,1.0f,1.0f),glm::vec3(0.5f,0.5f,0.5f)};*/
     genVertices(x, y);
     genIndices(x, y);
 }
@@ -27,8 +39,8 @@ void World::genVertices(unsigned int x, unsigned int y) {
     //vertex order in list: tl, tr, bl, br -- needs to be consistent with genIndices!!
     //vertices currently have position3 and color3, so multiply by 6 for stride
     std::vector<float> verts;
-    for (int j = 0; j < y; j++) {
-        for (int i = 0; i < x; i++) {
+    for (unsigned int j = 0; j < y; j++) {
+        for (unsigned int i = 0; i < x; i++) {
 
             //tl
             verts.push_back(0.0f + i);
@@ -77,8 +89,8 @@ void World::genIndices(unsigned int x, unsigned int y) {
     //triangles will be drawn as top left and bottom right (tl,bl,tr, tr,bl,br)
     std::vector<int> inds;
     int base, tl, tr, bl, br;
-    for (int i = 0; i < x; i++) {
-        for (int j = 0; j < y; j++) {
+    for (unsigned int i = 0; i < x; i++) {
+        for (unsigned int j = 0; j < y; j++) {
 
             base = (i + (j * x)) * 4;
             tl = base;
@@ -119,7 +131,7 @@ void World::draw() {
 
 
 void World::pushColor(glm::vec3 color, unsigned int x, unsigned int y) {
-	mColorData[x + (y * mWorldX)] = color;
+	//mColorData[x + (y * mWorldX)] = color;
 	int tl, tr, bl, br;
 	tl = ((((x + (y * mWorldX)) * 4) * 6) + 3) * sizeof(float);
 	tr = (((((x + (y * mWorldX)) * 4) + 1) * 6) + 3) * sizeof(float);
@@ -135,18 +147,46 @@ void World::pushColor(glm::vec3 color, unsigned int x, unsigned int y) {
 
 void World::wfcGen() {
 	std::vector<std::vector<node*>> nodeList;
-	for (int i = 0; i < mWorldX; i++) {
+	for (unsigned int i = 0; i < mWorldX; i++) {
         std::vector<node*> row;
-		for (int j = 0; j < mWorldY; j++) {
-            node* n = new node{mDomains, colorNode(mDomains), mBaseEntropy, glm::vec2(i,j), false};
+		for (unsigned int j = 0; j < mWorldY; j++) {
+            node* n = new node{mDomains, glm::vec3{0.0f,0.0f,0.0f}, mBaseEntropy, glm::vec2(i,j), false, nullptr, nullptr, nullptr, nullptr};
             row.push_back(n);
-            pushColor(n->color, i, j);
 		}
         nodeList.push_back(row);
 	}
+    for (int i = 0; i < static_cast<int>(mWorldX); i++) {
+        for (int j = 0; j < static_cast<int>(mWorldY); j++) {
+            node* n = nodeList[i][j];
+            n->color = colorNode(n);
+
+            bool left = ((i - 1) >= 0);
+            bool right = ((i + 1) < static_cast<int>(mWorldX));
+            bool up = ((j - 1) >= 0);
+            bool down = ((j + 1) < static_cast<int>(mWorldY));
+
+            if (left) {
+                n->left = nodeList[i - 1][j];
+            }
+            if (right) {
+                n->right = nodeList[i + 1][j];
+            }
+            if (up) {
+                n->up = nodeList[i][j - 1];
+            }
+            if (down) {
+                n->down = nodeList[i][j + 1];
+            }
+        }
+    }
     int startX = std::rand() % mWorldX;
     int startY = std::rand() % mWorldY;
     node* start = nodeList[startX][startY];
+    mEntropyQueue.push_back(start);
+    start->queued = true;
+    startX = std::rand() % mWorldX;
+    startY = std::rand() % mWorldY;
+    start = nodeList[startX][startY];
     mEntropyQueue.push_back(start);
     start->queued = true;
     mNodeList = nodeList;
@@ -154,7 +194,8 @@ void World::wfcGen() {
 
 
 
-glm::vec3 World::colorNode(std::vector<int> domain) {
+glm::vec3 World::colorNode(node* n) {
+    std::vector<int> domain = n->domain;
     glm::vec3 final = {0.0f, 0.0f, 0.0f};
     if (domain.size() == 0) {
         final = {0.0f, 0.0f, 0.0f};
@@ -169,19 +210,8 @@ glm::vec3 World::colorNode(std::vector<int> domain) {
             final.b += (col.b / count);
         }
     }
+    pushColor(final, n->pos.x, n->pos.y);
     return final;
-}
-
-
-
-void World::colorWorld() {
-    /*        self.world = []
-        for i in range(self.worldSize[0]):
-            row = []
-            for j in range(self.worldSize[1]):
-                row.append(Tile(nodes[i][j][1]))
-            self.world.append(row)
-        self.pushWorld()*/
 }
 
 
@@ -198,66 +228,65 @@ void World::collapseWF() {
         return;
     }
     node* n = mEntropyQueue.back();
-    glm::vec2 pos = n->pos;
     mEntropyQueue.pop_back();
     n->queued = false;
-    collapseNode(n, n->pos.x, n->pos.y);
+    collapseNode(n);
     //std::cout << mEntropyQueue.size() << std::endl;
 }
 
 
 
-void World::collapseNode(node* n, int x, int y) {
+void World::collapseNode(node* n) {
     if ((n->domain).size() == 0) {
         return;
     }
     int val = (n -> domain)[std::rand() % (n->domain).size()];
     n -> domain = {val};
-    n -> color = colorNode(n -> domain);
+    n -> color = colorNode(n);
     n -> entropy = 1;
 
-    bool left = ((x - 1) >= 0);
-    bool right = ((x + 1) < mWorldX);
-    bool up = ((y - 1) >= 0);
-    bool down = ((y + 1) < mWorldY);
-    node* t;
     std::vector<int> domain;
 
-    if (left) {
-        t = mNodeList[x - 1][y];
-        pruneNeighbor(t, val);
-        pushColor(t->color, x-1, y);
+    std::vector<node*> tList;
+
+    if (n->left) {
+        tList.push_back(n->left);
+        pruneNeighbor(n->left, n);
     }
-    if (right) {
-        t = mNodeList[x + 1][y];
-        pruneNeighbor(t, val);
-        pushColor(t->color, x+1, y);
+    if (n->right) {
+        tList.push_back(n->right);
+        pruneNeighbor(n->right, n);
     }
-    if (up) {
-        t = mNodeList[x][y - 1];
-        pruneNeighbor(t, val);
-        pushColor(t->color, x, y-1);
+    if (n->up) {
+        tList.push_back(n->up);
+        pruneNeighbor(n->up, n);
     }
-    if (down) {
-        t = mNodeList[x][y + 1];
-        pruneNeighbor(t, val);
-        pushColor(t->color, x, y+1);
+    if (n->down) {
+        tList.push_back(n->down);
+        pruneNeighbor(n->down, n);
     }
+
+    /*int rInd = std::rand() % tList.size();
+    pruneNeighbor(tList[rInd], n);*/
+
     std::sort(mEntropyQueue.begin(), mEntropyQueue.end(), Util::NodeCompare);
-    pushColor(n -> color, x, y);
 }
 
 
 
-void World::pruneNeighbor(node* t, int val) {
+void World::pruneNeighbor(node* t, node* n) {
     if (t->entropy == 1) {
         return;
     }
+    int val = (n -> domain)[0];
     std::vector<int> domain = {};
     for (int i = 0; i < t->entropy; i++) {
+        if (((t->domain)[i]) == val) {
+            domain.push_back((t->domain)[i]);
+        }
         if (val == 0) {
-            if ((t->domain)[i] == 1) {
-                domain.push_back(1);
+            if (((t->domain)[i] == 11) || ((t->domain)[i] == 1)) {
+                domain.push_back((t->domain)[i]);
             }
         } else if (val == 1) {
             if (((t->domain)[i] == 0) || ((t->domain)[i] == 2)) {
@@ -268,13 +297,45 @@ void World::pruneNeighbor(node* t, int val) {
                 domain.push_back((t->domain)[i]);
             }
         } else if (val == 3) {
-            if ((t->domain)[i] == 2) {
-                domain.push_back(2);
+            if (((t->domain)[i] == 2) || ((t->domain)[i] == 4)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 4) {
+            if (((t->domain)[i] == 3) || ((t->domain)[i] == 5)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 5) {
+            if (((t->domain)[i] == 4) || ((t->domain)[i] == 6)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 6) {
+            if (((t->domain)[i] == 5) || ((t->domain)[i] == 7)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 7) {
+            if (((t->domain)[i] == 6) || ((t->domain)[i] == 8)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 8) {
+            if (((t->domain)[i] == 7) || ((t->domain)[i] == 9)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 9) {
+            if (((t->domain)[i] == 8) || ((t->domain)[i] == 10)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 10) {
+            if (((t->domain)[i] == 9) || ((t->domain)[i] == 11)) {
+                domain.push_back((t->domain)[i]);
+            }
+        } else if (val == 11) {
+            if (((t->domain)[i] == 10) || ((t->domain)[i] == 0)) {
+                domain.push_back((t->domain)[i]);
             }
         }
     }
     t->domain = domain;
-    t->color = colorNode(t->domain);
+    t->color = colorNode(t);
     t->entropy = domain.size();
     if ((t->entropy > 0) && (t->entropy <= mBaseEntropy) && !(t->queued)) {
         int rando = 0;

@@ -1,0 +1,1 @@
+Make sure the executable and 'shaders' folder are in the same directory, then run.

@@ -1,3 +1,4 @@
+#include "Game.h"
 #include "DebugMsg.h"
 #include "ShaderProgram.h"
 #include "World.h"
@@ -9,8 +10,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <iostream>
 #include <vector>
-
-int main();
+#include <ctime>
 
 void processInput(GLFWwindow* window);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -18,7 +18,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 int main() {
     //app args
     const glm::uvec2 winSize = {1200,800};
-    const glm::uvec2 worldSize = {100,100};
+    const glm::uvec2 worldSize = {500,500};
     const glm::uvec2 viewSizeArg = {1000,1000};
     const char* title = "Pixel World 3";
     const glm::vec3 backgroundColor = glm::vec3(0.2f, 0.4f, 0.6f);
@@ -47,8 +47,8 @@ int main() {
     }
 
     ShaderProgram squareShader = ShaderProgram();
-    squareShader.createShader(ShaderProgram::Vertex, "SquareShaderVertex.glsl");
-    squareShader.createShader(ShaderProgram::Fragment, "SquareShaderFragment.glsl");
+    squareShader.createShader(ShaderProgram::Vertex, "shaders/SquareShaderVertex.glsl");
+    squareShader.createShader(ShaderProgram::Fragment, "shaders/SquareShaderFragment.glsl");
     squareShader.linkShaders();
     unsigned int shader = squareShader.getProgramID();
     squareShader.useProgram();
@@ -60,7 +60,7 @@ int main() {
     glm::mat4 projection = glm::ortho(0.0, (double)(worldSize.x+2), (double)(worldSize.y+2), 0.0, 0.1, 100.0);
     glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(1.0, 1.0, -1.0));
 
-    double tileSize = glm::min(winWidth / viewSize.x, winHeight / viewSize.y);
+    //double tileSize = glm::min(winWidth / viewSize.x, winHeight / viewSize.y);
     double tileX, tileY, tileSizeX, tileSizeY;
 
     World world(worldSize.x, worldSize.y);
@@ -91,9 +91,10 @@ int main() {
     int timeE, totalTime;
     bool finished = false;
     int timeS = std::time(nullptr);
+    bool pause = false;
+
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
-
         glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -102,7 +103,7 @@ int main() {
 
         tileSizeX = ((double)winWidth) / (viewSize.x + 2);
         tileSizeY = ((double)winHeight) / (viewSize.y + 2);
-        tileSize = glm::min(tileSizeX, tileSizeY);
+        //tileSize = glm::min(tileSizeX, tileSizeY);
         if (tileSizeX < tileSizeY) {
             tileX = (double)viewSize.x + 2;
             tileY = ((double)viewSize.x + 2) * ((double)winHeight / winWidth);
@@ -116,13 +117,19 @@ int main() {
         glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, &(view[0][0]));
         glUniformMatrix4fv(glGetUniformLocation(shader, "proj"), 1, GL_FALSE, &(projection[0][0]));
 
-        if (!world.finished()) {
+        //glUniform1i(glGetUniformLocation(shader, "uTime"), std::time(nullptr));
+
+        if (!world.finished() && !pause) {
             world.step();
         } else if (!finished) {
             finished = true;
             timeE = std::time(nullptr);
             totalTime = timeE - timeS;
-            std::cout << "Time (seconds): " << totalTime << std::endl;
+            int minutes = totalTime / 60;
+            int seconds = totalTime % 60;
+            double frameRate = (double)(worldSize.x * worldSize.y) / totalTime;
+            std::cout << "Time: " << minutes << "m" << seconds << "s" << std::endl;
+            std::cout << "Average FPS: " << frameRate << std::endl;
         }
         world.draw();
 
@@ -143,10 +150,10 @@ int main() {
 
 
 
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
 }
 
 
