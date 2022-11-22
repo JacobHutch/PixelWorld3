@@ -1,8 +1,13 @@
 #include "DebugMsg.h"
 
 #include <iostream>
+#include <string>
+
+
 
 DebugMessenger::DebugMessenger() {}
+
+
 
 void DebugMessenger::message(msgType header, std::string message) {
 	std::string headerStr = "";

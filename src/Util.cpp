@@ -1,5 +1,7 @@
 #include "Util.h"
 
+#include "glinc.h"
+
 
 
 namespace Util {
@@ -27,5 +29,11 @@ namespace Util {
             ret = false;
         }
         return ret;
+    }
+    
+
+    
+    void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+        glViewport(0, 0, width, height);
     }
 }

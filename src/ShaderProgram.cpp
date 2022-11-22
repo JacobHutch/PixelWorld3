@@ -6,11 +6,15 @@
 #include <fstream>
 #include <sstream>
 
+
+
 ShaderProgram::ShaderProgram() {
     mCount = 0;
     mShadersList = std::vector<unsigned int>();
     mProgram = 0;
 }
+
+
 
 void ShaderProgram::createShader(shaderType type, const char* shaderSource) {
     unsigned int shader = 0;

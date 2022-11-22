@@ -1,5 +1,6 @@
 #pragma once
 
+#include "glinc.h"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -24,4 +25,5 @@ namespace Util {
     double lerp(double a, double b, double t);
     glm::vec3 lerp3D(glm::vec3 a, glm::vec3 b, double t);
     bool NodeCompare(node* a, node* b);
+    void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 }

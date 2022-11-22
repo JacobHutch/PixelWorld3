@@ -2,6 +2,8 @@
 
 #include <string>
 
+
+
 class DebugMessenger {
 	public:
 	enum msgType { Note, Warning, Error, Debug };
