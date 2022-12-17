@@ -13,7 +13,11 @@
 
 
 
-Game::Game() {}
+Game::Game(const glm::vec3 backgroundColor,const glm::uvec2 winSize,
+            const glm::uvec2 worldSize, const glm::uvec2 viewSizeArg,
+            const char * title) : mBackgroundColor(backgroundColor),
+            mWinSize(winSize),mWorldSize(worldSize),
+            mViewSizeArg(viewSizeArg),mTitle(title) {}
 
 
 

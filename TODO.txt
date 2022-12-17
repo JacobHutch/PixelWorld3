@@ -1,0 +1,3 @@
+implement destructors / better memory management
+refurbish ShaderProgram
+finish cleaning game.cpp
