@@ -7,5 +7,5 @@ out vec4 FragColor;
 uniform int uTime;
 
 void main() {
-	FragColor = vec4(color, 1.0f);
+    FragColor = vec4(color, 1.0f);
 }

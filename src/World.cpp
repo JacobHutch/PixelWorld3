@@ -11,7 +11,7 @@
 World::World(unsigned int x, unsigned int y) : mWorldX(x), mWorldY(y) {
     std::srand(time(nullptr));
     mFinished = false;
-	mColorData = std::vector<glm::vec3>(x * y, glm::vec3(1.0f));
+    mColorData = std::vector<glm::vec3>(x * y, glm::vec3(1.0f));
     mDomains = {0,1,2,3,4,5,6,7,8,9,10,11};
     mBaseEntropy = mDomains.size();
     //rainbow scheme
@@ -131,30 +131,30 @@ void World::draw() {
 
 
 void World::pushColor(glm::vec3 color, unsigned int x, unsigned int y) {
-	//mColorData[x + (y * mWorldX)] = color;
-	int tl, tr, bl, br;
-	tl = ((((x + (y * mWorldX)) * 4) * 6) + 3) * sizeof(float);
-	tr = (((((x + (y * mWorldX)) * 4) + 1) * 6) + 3) * sizeof(float);
-	bl = (((((x + (y * mWorldX)) * 4) + 2) * 6) + 3) * sizeof(float);
-	br = (((((x + (y * mWorldX)) * 4) + 3) * 6) + 3) * sizeof(float);
-	glBufferSubData(GL_ARRAY_BUFFER, tl, 3 * sizeof(float), &color[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, tr, 3 * sizeof(float), &color[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, bl, 3 * sizeof(float), &color[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, br, 3 * sizeof(float), &color[0]);
+    //mColorData[x + (y * mWorldX)] = color;
+    int tl, tr, bl, br;
+    tl = ((((x + (y * mWorldX)) * 4) * 6) + 3) * sizeof(float);
+    tr = (((((x + (y * mWorldX)) * 4) + 1) * 6) + 3) * sizeof(float);
+    bl = (((((x + (y * mWorldX)) * 4) + 2) * 6) + 3) * sizeof(float);
+    br = (((((x + (y * mWorldX)) * 4) + 3) * 6) + 3) * sizeof(float);
+    glBufferSubData(GL_ARRAY_BUFFER, tl, 3 * sizeof(float), &color[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, tr, 3 * sizeof(float), &color[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, bl, 3 * sizeof(float), &color[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, br, 3 * sizeof(float), &color[0]);
 }
 
 
 
 void World::wfcGen() {
-	std::vector<std::vector<node*>> nodeList;
-	for (unsigned int i = 0; i < mWorldX; i++) {
+    std::vector<std::vector<node*>> nodeList;
+    for (unsigned int i = 0; i < mWorldX; i++) {
         std::vector<node*> row;
-		for (unsigned int j = 0; j < mWorldY; j++) {
+        for (unsigned int j = 0; j < mWorldY; j++) {
             node* n = new node{mDomains, glm::vec3{0.0f,0.0f,0.0f}, mBaseEntropy, glm::vec2(i,j), false, nullptr, nullptr, nullptr, nullptr};
             row.push_back(n);
-		}
+        }
         nodeList.push_back(row);
-	}
+    }
     for (int i = 0; i < static_cast<int>(mWorldX); i++) {
         for (int j = 0; j < static_cast<int>(mWorldY); j++) {
             node* n = nodeList[i][j];

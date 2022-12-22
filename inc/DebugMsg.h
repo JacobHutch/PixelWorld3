@@ -5,10 +5,10 @@
 
 
 class DebugMessenger {
-	public:
-	enum msgType { Note, Warning, Error, Debug };
+    public:
+    enum msgType { Note, Warning, Error, Debug };
 
-	DebugMessenger();
+    DebugMessenger();
 
-	static void message(msgType header, std::string message);
+    static void message(msgType header, std::string message);
 };

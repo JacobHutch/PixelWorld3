@@ -1,3 +1,4 @@
 implement destructors / better memory management
 refurbish ShaderProgram
 finish cleaning game.cpp
+sync types to opengl (int -> GLint, unsigned int to GLuint, etc)

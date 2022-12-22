@@ -9,6 +9,6 @@ uniform mat4 view;
 out vec3 color;
 
 void main() {
-   gl_Position = proj * view * vec4(aPos, 1.0f);
-   color = aColor;
+    gl_Position = proj * view * vec4(aPos, 1.0f);
+    color = aColor;
 }

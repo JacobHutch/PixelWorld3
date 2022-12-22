@@ -92,7 +92,7 @@ void Game::gameLoop() {
     int timeS = std::time(nullptr);
     bool pause = false;
 
-	while (!glfwWindowShouldClose(mWindow)) {
+    while (!glfwWindowShouldClose(mWindow)) {
         processInput(mWindow);
         glClearColor(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);

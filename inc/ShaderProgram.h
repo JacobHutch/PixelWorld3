@@ -5,20 +5,20 @@
 
 
 class ShaderProgram {
-	public:
-	enum shaderType { Vertex, Fragment };
+    public:
+    enum shaderType { Vertex, Fragment };
 
-	ShaderProgram();
+    ShaderProgram();
 
-	void createShader(shaderType type, const char* shaderSource);
-	void linkShaders();
-	unsigned int getProgramID();
-	void useProgram();
+    void createShader(shaderType type, const char* shaderSource);
+    void linkShaders();
+    unsigned int getProgramID();
+    void useProgram();
 
 
 
-	private:
-	unsigned int mCount;
-	std::vector<unsigned int> mShadersList;
-	unsigned int mProgram;
+    private:
+    unsigned int mCount;
+    std::vector<unsigned int> mShadersList;
+    unsigned int mProgram;
 };
